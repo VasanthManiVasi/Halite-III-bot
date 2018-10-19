@@ -6,10 +6,15 @@ from hlt import constants
 
 import random
 import logging
+import utils
 
 # This game object contains the initial game state.
 game = hlt.Game()
 ship_status = {}
+maxx, maxy = utils.getMax(game)
+lb, rb = utils.setBorders(game, maxx)
+#logging.info('lb = {}, rb = {}'.format(lb, rb))
+
 # Respond with your name.
 game.ready("TheMadMan")
 
@@ -44,21 +49,16 @@ while True:
                     move = game_map.naive_navigate(ship, me.shipyard.position)
                 command_queue.append(ship.move(move))
                 continue
-        elif ship.halite_amount >= constants.MAX_HALITE / 1.2:
+        elif ship.is_full:
             ship_status[ship.id] = "returning"
             
         logging.info("Ship {} has {} halite.".format(ship.id, ship.halite_amount))
-        
-        if game_map[ship.position].halite_amount > constants.MAX_HALITE / 100 and me.halite_amount > constants.DROPOFF_COST + constants.SHIP_COST:
-            command_queue.append(ship.make_dropoff())
-            command_queue.append(game.me.shipyard.spawn())
-            
-        
-        
-        if game_map[ship.position].halite_amount < constants.MAX_HALITE / 10 or ship.is_full:
+
+        if game_map[ship.position].halite_amount < constants.MAX_HALITE / 100 or ship.is_full:
+            maxPos = utils.getMaxHalitePosition(game, lb, rb, maxy)
             command_queue.append(
-                #ship.move('s')) 
-                ship.move(random.choice(['s','e','w','n'])))
+                ship.move(game_map.naive_navigate(ship, maxPos)))
+                #ship.move(random.choice(['s','e','w','n'])))
         else:
             command_queue.append(ship.stay_still())
 
