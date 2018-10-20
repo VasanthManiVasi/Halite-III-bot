@@ -8,11 +8,11 @@ def setBorders(game, maxx):
     if (game.me.shipyard.position.x > maxx / 2):
         lb = maxx / 2
         rb = maxx
-        return lb, rb
+        return int(lb), int(rb)
     else:
-        rb = maxx - 1
+        rb = maxx /2 - 1
         lb = 0
-        return lb, rb
+        return int(lb), int(rb)
     
 def getMaxHalitePosition(game, lb, rb, maxy):
     maximumHalite = {'amount': []}
