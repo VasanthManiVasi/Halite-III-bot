@@ -54,8 +54,9 @@ while True:
             
         logging.info("Ship {} has {} halite.".format(ship.id, ship.halite_amount))
 
-        if game_map[ship.position].halite_amount < constants.MAX_HALITE / 100 or ship.is_full:
-            maxPos = utils.getMaxHalitePosition(game, lb, rb, maxy)
+        if game_map[ship.position].halite_amount < constants.MAX_HALITE / 95 or ship.is_full:
+            maxPos = utils.getNearestMaxHalitePosition(game, lb, rb, maxy, ship.position)
+            #ayyy look new param for nearest maxhalite pos that is ship.postition
             command_queue.append(
                 ship.move(game_map.naive_navigate(ship, maxPos)))
                 #ship.move(random.choice(['s','e','w','n'])))
@@ -64,7 +65,7 @@ while True:
 
     # If you're on the first turn and have enough halite, spawn a ship.
     # Don't spawn a ship if you currently have a ship at port, though.
-    if ((game.turn_number >= 1 and me.halite_amount >= constants.SHIP_COST + constants.DROPOFF_COST and not game_map[me.shipyard].is_occupied) or (not me.get_ships())):
+    if ((game.turn_number >= 1 and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied) or (not me.get_ships())):
         command_queue.append(game.me.shipyard.spawn())
 
     # Send your moves back to the game environment, ending this turn.
