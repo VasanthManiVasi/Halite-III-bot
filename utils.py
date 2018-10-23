@@ -41,4 +41,59 @@ def getNearestMaxHalitePosition(game, lb, rb, maxy, current_pos):
             #use zip and sorted(zip, key = operator.getitem())
 """
 
+def cheesePositio (game):
+    logging.info(f'inside')
+    for x in range(game.game_map.width):
+        for y in range(game.game_map.height):
+            #logging.info(f'structure thing: {type(game.me.shipyard)} ')
+            if ((game.game_map[Position(x, y)].structure_type == type(game.me.shipyard)) and (game.me.shipyard.position != Position(x, y))):
+                logging.info(f'inside')
+                return Position(x, y)
 
+
+def display_stuff(game):
+    logging.info(f'{game.players}')
+    logging.info(f'{game.players[1]}')
+    logging.info(f'{type(game.players)}')
+    logging.info(f'{type(game.players[0])}')
+        
+def cheesePosition (game):
+    for id, player in game.players.items():
+        if (id != game.me.id):
+            return player.shipyard.position
+
+    """for player in game.players:
+        logging.info(f'{player}')
+        logging.info(f'{type(player)}')"""
+    """if (player != my_id):
+            logging.info('not equal')"""
+    """#try:
+                return game.game_map.get_unsafe_moves(ship.position, player.shipyard.position)[0]
+            #except:
+            #    return Direction.Still"""
+
+def is_occupied_by_me (game, pos):
+    if (game.game_map[pos].is_occupied):
+        for ship in game.me.get_ships():
+            if (ship.position == pos):
+                return True
+    else:
+        return False
+
+def move(game, current_pos, destination):
+    resultMoves = game.game_map.get_unsafe_moves(current_pos, destination)
+    if (not resultMoves):
+        return Direction.Still
+    else:
+        for one_move in resultMoves:
+            if (not is_occupied_by_me(game, current_pos.directional_offset(one_move))) and not ship_moves_here(game, destination):
+                return one_move
+    return Direction.Still
+
+def ship_moves_here(game, pos):
+    for ship in game.me.get_ships():
+        for direction in Direction.get_all_cardinals():
+            if ship.position.directional_offset(direction) == pos:
+                return True
+    return False
+        #return resultMoves[0]

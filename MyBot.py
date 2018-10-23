@@ -46,7 +46,8 @@ while True:
                     tndrop.sort(reverse = True)
                     move = game_map.naive_navigate(ship, tndrop[0])
                 else:
-                    move = game_map.naive_navigate(ship, me.shipyard.position)
+                    #move = game_map.naive_navigate(ship, me.shipyard.position)
+                    move = utils.move(game, ship.position, me.shipyard.position)
                 command_queue.append(ship.move(move))
                 continue
         elif ship.is_full:
@@ -54,19 +55,27 @@ while True:
             
         logging.info("Ship {} has {} halite.".format(ship.id, ship.halite_amount))
 
-        if game_map[ship.position].halite_amount < constants.MAX_HALITE / 95 or ship.is_full:
+        if ((game_map[me.shipyard.position].is_occupied) and (game_map[me.shipyard.position].ship.owner != me.id)):
+            if me.halite_amount >= constants.SHIP_COST:
+                command_queue.append(me.shipyard.spawn())
+                break
+            else:
+                command_queue.append(ship.move(utils.move(game, ship.position, me.shipyard.position)))
+                continue
+
+        if game_map[ship.position].halite_amount < 50 or ship.is_full:
             maxPos = utils.getNearestMaxHalitePosition(game, lb, rb, maxy, ship.position)
             #ayyy look new param for nearest maxhalite pos that is ship.postition
-            command_queue.append(
-                ship.move(game_map.naive_navigate(ship, maxPos)))
+            command_queue.append(ship.move(utils.move(game, ship.position, maxPos)))
+                #ship.move(game_map.naive_navigate(ship, maxPos)))
                 #ship.move(random.choice(['s','e','w','n'])))
         else:
             command_queue.append(ship.stay_still())
 
     # If you're on the first turn and have enough halite, spawn a ship.
     # Don't spawn a ship if you currently have a ship at port, though.
-    if ((game.turn_number >= 1 and me.halite_amount >= constants.SHIP_COST and not game_map[me.shipyard].is_occupied) or (not me.get_ships())):
+    if ((game.turn_number >= 1 and game.turn_number < 250)and (me.halite_amount >= constants.SHIP_COST * 2) and (not game_map[me.shipyard].is_occupied) or (not me.get_ships())):
         command_queue.append(game.me.shipyard.spawn())
-
+    
     # Send your moves back to the game environment, ending this turn.
     game.end_turn(command_queue)
