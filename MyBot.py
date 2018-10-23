@@ -46,8 +46,8 @@ while True:
                     tndrop.sort(reverse = True)
                     move = game_map.naive_navigate(ship, tndrop[0])
                 else:
-                    #move = game_map.naive_navigate(ship, me.shipyard.position)
-                    move = utils.move(game, ship.position, me.shipyard.position)
+                    move = game_map.naive_navigate(ship, me.shipyard.position)
+                    #move = utils.move_to_pos(game, ship.position, me.shipyard.position)
                 command_queue.append(ship.move(move))
                 continue
         elif ship.is_full:
@@ -60,14 +60,14 @@ while True:
                 command_queue.append(me.shipyard.spawn())
                 break
             else:
-                command_queue.append(ship.move(utils.move(game, ship.position, me.shipyard.position)))
+                command_queue.append(ship.move(utils.move_to_pos(game, ship.position, me.shipyard.position)))
                 continue
 
         if game_map[ship.position].halite_amount < 50 or ship.is_full:
             maxPos = utils.getNearestMaxHalitePosition(game, lb, rb, maxy, ship.position)
             #ayyy look new param for nearest maxhalite pos that is ship.postition
-            command_queue.append(ship.move(utils.move(game, ship.position, maxPos)))
-                #ship.move(game_map.naive_navigate(ship, maxPos)))
+            command_queue.append(#ship.move(utils.move_to_pos(game, ship.position, maxPos)))
+                ship.move(game_map.naive_navigate(ship, maxPos)))
                 #ship.move(random.choice(['s','e','w','n'])))
         else:
             command_queue.append(ship.stay_still())

@@ -80,15 +80,38 @@ def is_occupied_by_me (game, pos):
     else:
         return False
 
-def move(game, current_pos, destination):
+def move_to_pos(game, current_pos, destination):
     resultMoves = game.game_map.get_unsafe_moves(current_pos, destination)
     if (not resultMoves):
         return Direction.Still
     else:
         for one_move in resultMoves:
-            if (not is_occupied_by_me(game, current_pos.directional_offset(one_move))) and not ship_moves_here(game, destination):
+            if (not is_occupied_by_me(game, current_pos.directional_offset(one_move))):# and not ship_moves_here(game, destination):
                 return one_move
     return Direction.Still
+
+def just_move (game, current_pos, destination):
+    resultMoves = game.game_map.get_unsafe_moves(current_pos, destination)
+    logging.info(f'{resultMoves}')
+    if (not resultMoves):
+        return Direction.Still
+    else:
+        shortest_move = Direction.North
+        for one_move in resultMoves:
+            if game.game_map.calculate_distance(current_pos.directional_offset(shortest_move), destination) > game.game_map.calculate_distance(current_pos.directional_offset(one_move), destination): 
+                shortest_move = one_move
+                logging.info(f'{shortest_move}, and one move: {one_move}')
+        return shortest_move
+    return Direction.Still
+
+def just_move_pos (game, current_pos, destination):
+    resultMoves = game.game_map.get_unsafe_moves(current_pos, destination)
+    if (not resultMoves):
+        return current_pos.directional_offset(Direction.Still)
+    else:
+        for one_move in resultMoves:
+            return current_pos.directional_offset(one_move)
+    return current_pos.directional_offset(Direction.Still)
 
 def ship_moves_here(game, pos):
     for ship in game.me.get_ships():
@@ -96,4 +119,13 @@ def ship_moves_here(game, pos):
             if ship.position.directional_offset(direction) == pos:
                 return True
     return False
+
+def get_id_of_ship(game, pos):
+    for ship in game.me.get_ships():
+            if (ship.position == pos):
+                logging.info(f'id: {ship.id}')
+                return ship.id
+
+
+
         #return resultMoves[0]
