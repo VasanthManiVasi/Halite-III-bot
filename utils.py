@@ -96,12 +96,7 @@ def just_move (game, current_pos, destination):
     if (not resultMoves):
         return Direction.Still
     else:
-        shortest_move = Direction.North
-        for one_move in resultMoves:
-            if game.game_map.calculate_distance(current_pos.directional_offset(shortest_move), destination) > game.game_map.calculate_distance(current_pos.directional_offset(one_move), destination): 
-                shortest_move = one_move
-                logging.info(f'{shortest_move}, and one move: {one_move}')
-        return shortest_move
+        return shortest_move(game, current_pos, destination, resultMoves)
     return Direction.Still
 
 def just_move_pos (game, current_pos, destination):
@@ -123,9 +118,16 @@ def ship_moves_here(game, pos):
 def get_id_of_ship(game, pos):
     for ship in game.me.get_ships():
             if (ship.position == pos):
-                logging.info(f'id: {ship.id}')
+                logging.info(f'got ship id: {ship.id}')
                 return ship.id
 
+def shortest_move (game, pos, des, moves):
+    move = Direction.North
+    for one_move in moves:
+        if game.game_map.calculate_distance(pos.directional_offset(move), des) > game.game_map.calculate_distance(pos.directional_offset(one_move), des): 
+            move = one_move
+            logging.info(f'{pos.directional_offset(move)}, and one move: {pos.directional_offset(one_move)}')
+    return move
 
 
         #return resultMoves[0]

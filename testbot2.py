@@ -70,9 +70,9 @@ while True:
             if ship.position == me.shipyard.position:
                 ship_status[ship.id] = "exploring"
             else:
-                logging.info(f'in else')
+                #logging.info(f'in else')
                 nextPos = ship.position.directional_offset(utils.just_move(game, ship.position, me.shipyard.position))
-                logging.info(f'next position; {nextPos}')
+                logging.info(f'next position; {nextPos} for {ship.id}')
                 if (utils.is_occupied_by_me(game, nextPos)):
                     logging.info(f'occupied by me')    
                     next_ship = me.get_ship(utils.get_id_of_ship(game, nextPos))
