@@ -22,7 +22,7 @@ def getNearestMaxHalitePosition(game, lb, rb, maxy, current_pos):
             for pos in Position(x, y).get_surrounding_cardinals():
                 surroundingHalite += [game.game_map[pos].halite_amount]
             totalHalite = [game.game_map[Position(x, y)].halite_amount] + surroundingHalite
-            if ((sum(maximumHalite['amount']) < sum(totalHalite)) and (game.game_map.calculate_distance(current_pos, Position(x,y)) < 15)):
+            if ((sum(maximumHalite['amount']) < sum(totalHalite)) and (game.game_map.calculate_distance(current_pos, Position(x,y)) < 10)):
                 maximumHalite['amount'] = totalHalite
                 maximumHalite['position'] = Position(x,y)
     return maximumHalite['position']
@@ -80,24 +80,67 @@ def is_occupied_by_me (game, pos):
     else:
         return False
 
-def move_to_pos(game, current_pos, destination):
+def move_to_pos(game, current_pos, destination, ship_positions, ship):
     resultMoves = game.game_map.get_unsafe_moves(current_pos, destination)
-    if (not resultMoves):
+    #resultMoves += [move for move in Direction.get_all_cardinals() if move not in resultMoves]
+    #resultMoves.sort(key = lambda move: game.game_map.calculate_distance(current_pos.directional_offset(move), destination), reverse = False)
+    '''if (not resultMoves):
         return Direction.Still
-    else:
-        for one_move in resultMoves:
-            if (not is_occupied_by_me(game, current_pos.directional_offset(one_move))):# and not ship_moves_here(game, destination):
-                return one_move
+    else:'''
+    for one_move in resultMoves:
+        if (not is_occupied_by_me(game, current_pos.directional_offset(one_move))) and not ship_moves_here(game, current_pos.directional_offset(one_move), ship_positions, ship):
+            return one_move
     return Direction.Still
+
+def swap_ships(game, ship, nextPos, ship_moves, ship_positions, swap_counter, command_queue):
+    if (not already_swapped(ship, swap_counter)):
+        next_ship = game.me.get_ship(get_id_of_ship(game, nextPos))
+        if can_move(game, ship) and can_move(game, next_ship):
+            append_to_queue(ship.move(just_move(game, ship.position, next_ship.position)), command_queue)
+            append_to_queue(next_ship.move(just_move(game, next_ship.position, ship.position)), command_queue)
+            swap_counter[ship.id] = 'swapped'
+            swap_counter[next_ship.id] = 'swapped'
+        else:
+            append_to_queue(ship.move(Direction.Still), command_queue)
+            append_to_queue(next_ship.move(Direction.Still), command_queue)
+        
+        ship_positions += [next_ship.position] + [ship.position]
+        ship_moves[ship.id] = 'done'
+        ship_moves[next_ship.id] = 'done'
+        
+    else:
+        append_to_queue(ship.move(Direction.Still), command_queue)
+        ship_positions += [ship.position]
 
 def just_move (game, current_pos, destination):
     resultMoves = game.game_map.get_unsafe_moves(current_pos, destination)
-    logging.info(f'{resultMoves}')
+    #logging.info(f'{resultMoves}')
     if (not resultMoves):
         return Direction.Still
     else:
         return shortest_move(game, current_pos, destination, resultMoves)
     return Direction.Still
+
+def already_swapped (ship, swap_counter):
+    if swap_counter:
+        for ship_id in swap_counter:
+            if ship_id == ship.id:
+                return True
+    return False
+
+def can_move (game, ship):
+    if ship.position == game.me.shipyard.position:
+        return True
+    if game.game_map[ship.position].halite_amount * 0.1 < ship.halite_amount:
+        return True
+    return False
+
+"""def just_move_around (game, pos, des):
+    resultMoves = game.game_map.get_unsafe_moves(pos,des)
+    if (not resultMoves):
+        return Direction.Still
+    else:
+        """
 
 def just_move_pos (game, current_pos, destination):
     resultMoves = game.game_map.get_unsafe_moves(current_pos, destination)
@@ -108,17 +151,26 @@ def just_move_pos (game, current_pos, destination):
             return current_pos.directional_offset(one_move)
     return current_pos.directional_offset(Direction.Still)
 
-def ship_moves_here(game, pos):
+def ship_moves_here(game, pos, ship_positions, main_ship):
+    if pos in ship_positions:
+        return True
     for ship in game.me.get_ships():
-        for direction in Direction.get_all_cardinals():
-            if ship.position.directional_offset(direction) == pos:
-                return True
+        if ship.id != main_ship.id and ship.position == pos:
+            return True
     return False
+
+    '''def ship_moves_here(game, pos, main_ship):
+    """for stuff, ship in sorted(game.me._ships.items()):
+        if (ship.id != main_ship.id):
+            for direction in Direction.get_all_cardinals() + [Direction.Still]:
+                if ship.position.directional_offset(direction) == pos:
+                    return True"""
+    return False'''
 
 def get_id_of_ship(game, pos):
     for ship in game.me.get_ships():
             if (ship.position == pos):
-                logging.info(f'got ship id: {ship.id}')
+                #logging.info(f'got ship id: {ship.id}')
                 return ship.id
 
 def shortest_move (game, pos, des, moves):
@@ -126,8 +178,18 @@ def shortest_move (game, pos, des, moves):
     for one_move in moves:
         if game.game_map.calculate_distance(pos.directional_offset(move), des) > game.game_map.calculate_distance(pos.directional_offset(one_move), des): 
             move = one_move
-            logging.info(f'{pos.directional_offset(move)}, and one move: {pos.directional_offset(one_move)}')
+            #logging.info(f'{pos.directional_offset(move)}, and one move: {pos.directional_offset(one_move)}')
     return move
 
+def append_to_queue(command, command_queue):
+    if not command_queue:
+        command_queue.append(command)
+    else:    
+        for one_command in command_queue:
+            if (one_command[0] == 'm') and (command[2] in one_command):
+                command_queue.remove(one_command)
+        command_queue.append(command)
+        
 
-        #return resultMoves[0]
+
+#return resultMoves[0]

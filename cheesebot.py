@@ -63,7 +63,7 @@ while True:
         #   Else, collect halite.
         if (ship.position != cheesePos):
             if game_map[ship.position].halite_amount < constants.MAX_HALITE / 100 or ship.is_full:
-                    command_queue.append(ship.move(utils.move_to_pos(game, ship.position, cheesePos)))
+                    utils.append_to_queue(ship.move(utils.move_to_pos(game, ship.position, cheesePos)), command_queue)
                     #ship.move(game_map.get_unsafe_moves(ship.position, cheesePos)[0]))
                     #ship.stay_still()
         else:
